@@ -7,35 +7,53 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-app.use(express.static("./public/"))
+app.use(express.static("./public/"));
 
-io.on('connection', (socket)=>{
-    socket.on('disconnect', ()=>{
-        socket.broadcast.emit("playerLeft", {
-            id: socket.playerId
-        })
-    })
-    socket.on('join', (data)=>{
-        socket.playerId = data.id;
+io.on("connection", (socket) => {
+  socket.on("disconnect", () => {
+    socket.broadcast.emit("playerLeft", {
+      id: socket.playerId,
+    });
+  });
+  socket.on("join", (data) => {
+    socket.playerId = data.id;
 
-        socket.broadcast.emit("playerJoined", {
-            id: socket.playerId
-        })
-    })
-    socket.on('playerX', (x)=>{
-        io.emit('thisPlayerX', x);
-    })
-    socket.on('playerY', (y)=>{
-        io.emit('thisPlayerY', y);
-    })
-    socket.on('playerColor', (color)=>{
-        io.emit('thisPlayerColor', color);
-    })
-    socket.on('playerInfo', (data)=>{
-        io.emit("playerInformation", data);
-    })
-})
+    socket.broadcast.emit("playerJoined", {
+      id: socket.playerId,
+    });
+  });
+  socket.on("playerX", (x) => {
+    io.emit("thisPlayerX", x);
+    console.log(socket.playerId);
+  });
+  socket.on("playerY", (y) => {
+    io.emit("thisPlayerY", y);
+  });
+  socket.on("playerColor", (color) => {
+    io.emit("thisPlayerColor", color);
+  });
+  socket.on("playerInfo", (data) => {
+    io.emit("playerInformation", {
+      x: data.x,
+      y: data.y,
+      color: data.color,
+      borderColor: data.borderColor,
+      id: data.id,
+      socketId: socket.id,
+    });
+  });
+  socket.emit("socketIdSignScript", {
+    socketId: socket.id,
+  });
+  socket.on("sendPlayerNameToPublicScript", (data) => {
+    io.emit("name", {
+      name: data.name,
+      id: data.id,
+    });
+    console.log(data.id);
+  });
+});
 
-server.listen(3000, ()=>{
-    console.log("listening to port 3000, server active")
-})
+server.listen(3000, () => {
+  console.log("listening to port 3000, server active");
+});
